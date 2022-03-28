@@ -1,14 +1,15 @@
 from typing import List
 
-from Card import Card
 from Deck import Deck
 from Player import Player
 from Stack import Stack
-from consts import PLAYERS, STACKS, CARDS, MIN_PLAY_CARDS, MIN_PLAY_CARDS_EMPTY_DECK, MAX_CARDS, STRATEGY
+from consts import PLAYERS, STACKS, MIN_PLAY_CARDS, MIN_PLAY_CARDS_EMPTY_DECK, MAX_CARDS
 
 
 class Game:
     def __init__(self):
+        from Strategies.MinMaxStrategy import MinMaxStrategy
+
         self.deck = Deck()
 
         up_stacks = [Stack(Stack.DIR_UP) for _ in range(STACKS // 2)]
@@ -17,8 +18,7 @@ class Game:
 
         self.players: List[Player] = [Player() for _ in range(PLAYERS)]
         self.active_player_index = 0
-
-        self.strategy = STRATEGY
+        self.strategy = MinMaxStrategy()
 
         # Так надо для условий, когда например по ошибке раздаётся карт больше, чем есть в колоде
         for _ in range(MAX_CARDS * len(self.players)):
@@ -35,31 +35,20 @@ class Game:
             else:
                 cards_to_play = MIN_PLAY_CARDS_EMPTY_DECK
 
-            # game logic here
-            played_cards = 0
-            while cards_to_play != 0:
-                best_move = self.find_fix_move(self.active_player)
-                if best_move:
-                    card, stack = best_move
-                    self.play_card(self.active_player, card, stack)
-                    continue
+            self.strategy.refresh_data(self)
+            try:
+                played_cards = self.strategy.get_played_cards(cards_to_play)
+            except:
+                break
+            for card_index, stack_index in played_cards:
+                self.play_card(self.active_player, self.active_player.cards[card_index], self.stacks[stack_index])
 
-                minimal_move = self.find_minimal_move(self.active_player)
-                if minimal_move:
-                    card, stack = minimal_move
-                    self.play_card(self.active_player, card, stack)
-
-                cards_to_play -= 1
-                played_cards += 1
-
-            for _ in range(played_cards):
+            for _ in range(len(played_cards)):
                 card = self.deck.get_card()
                 if card:
                     self.active_player.add_card(card)
 
             self.pass_the_turn()
-        # print(len(self.deck))
-        # print("done")
 
     @property
     def active_player(self):
@@ -76,29 +65,6 @@ class Game:
         self.active_player_index += 1
         if self.active_player_index >= len(self.players):
             self.active_player_index = 0
-
-    def find_fix_move(self, player) -> (Card, Stack):
-        for card in player.cards:
-            for stack in self.stacks:
-                if stack.can_fix_stack(card):
-                    return card, stack
-        return None
-
-    def find_minimal_move(self, player) -> (Card, Stack):
-        minimal_delta = CARDS
-        minimal_move = None
-
-        for card in player.cards:
-            for stack in self.stacks:
-                if stack.check_can_add_card(card):
-                    if stack.is_growing_stack:
-                        delta = card.number - stack.last_card.number
-                    else:
-                        delta = stack.last_card.number - card.number
-                    if delta < minimal_delta:
-                        minimal_delta = delta
-                        minimal_move = card, stack
-        return minimal_move
 
     @staticmethod
     def play_card(player, card, stack):

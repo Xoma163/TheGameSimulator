@@ -12,6 +12,9 @@ class Deck:
     def __str__(self):
         return " ".join([str(x) for x in self.cards])
 
+    def __repr__(self):
+        return self.__str__()
+
     def __len__(self):
         return len(self.cards)
 

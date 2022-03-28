@@ -10,6 +10,9 @@ class Player:
     def __str__(self):
         return " ".join([str(x) for x in self.cards])
 
+    def __repr__(self):
+        return self.__str__()
+
     def add_card(self, card):
         self.cards.append(card)
 

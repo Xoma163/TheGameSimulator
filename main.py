@@ -1,7 +1,7 @@
 from Game import Game
 from consts import CARDS, STACKS
 
-GAMES = 1000
+GAMES = 100
 
 
 def main():
@@ -21,7 +21,7 @@ def main():
 
     avg_played_cards = round(sum(played_cards_count) / len(played_cards_count), 2)
     avg_played_cards_perc = round(avg_played_cards / max_played_cards * 100, 2)
-    median_played_cards = sorted(played_cards_count)[:GAMES // 2][0]
+    median_played_cards = sorted(played_cards_count)[GAMES // 2:][0]
     median_played_cards_perc = round(median_played_cards / max_played_cards * 100, 2)
     win_games = sum(game_stats)
     win_games_perc = round(win_games / GAMES * 100, 2)
