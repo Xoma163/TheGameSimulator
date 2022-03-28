@@ -7,8 +7,9 @@ from consts import CARDS
 
 
 class MinMaxStrategy(Strategy):
+    MINIMAL_WINDOW_MOVE = 4
+
     def get_played_cards(self, min_cards) -> List[Tuple[int, int]]:
-        played_cards = []
         for i in range(min_cards):
             card_index, stack_index = None, None
 
@@ -21,16 +22,19 @@ class MinMaxStrategy(Strategy):
                     card_index, stack_index = minimal_move
             if card_index is not None and stack_index is not None:
                 self.play_card(card_index, stack_index)
-                played_cards.append((card_index, stack_index))
             else:
                 raise RuntimeError("Cant do a move")
         best_move = self.find_fix_move()
-        while best_move is not None:
-            card_index, stack_index = best_move
+        minimal_move = self.find_minimal_move(self.MINIMAL_WINDOW_MOVE)
+        while best_move is not None or best_move is not None:
+            if best_move is not None:
+                card_index, stack_index = best_move
+            else:
+                card_index, stack_index = minimal_move
             self.play_card(card_index, stack_index)
-            played_cards.append((card_index, stack_index))
             best_move = self.find_fix_move()
-        return played_cards
+            minimal_move = self.find_fix_move()
+        return self.played_cards
 
     def find_fix_move(self) -> (Card, Stack):
         for card_index, card in enumerate(self.player.cards):
@@ -39,8 +43,7 @@ class MinMaxStrategy(Strategy):
                     return card_index, stack_index
         return None
 
-    def find_minimal_move(self) -> (Card, Stack):
-        minimal_delta = CARDS
+    def find_minimal_move(self, minimal_delta=CARDS) -> (Card, Stack):
         minimal_move = None
 
         for card_index, card in enumerate(self.player.cards):

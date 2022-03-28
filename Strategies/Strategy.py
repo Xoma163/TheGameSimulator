@@ -10,6 +10,7 @@ class Strategy:
     def __init__(self):
         self.player: Player = None
         self.stacks: List[Stack] = []
+        self.played_cards: List[Tuple[int, int]] = []
 
     def refresh_data(self, game: Game):
         """
@@ -17,6 +18,7 @@ class Strategy:
         """
         self.player = deepcopy(game.active_player)
         self.stacks = deepcopy(game.stacks)
+        self.played_cards = []
 
     def get_played_cards(self, min_cards) -> List[Tuple[int, int]]:
         """
@@ -34,3 +36,4 @@ class Strategy:
         card = self.player.cards[card_index]
         self.player.play_card(card)
         self.stacks[stack_index].add_card(card)
+        self.played_cards.append((card_index, stack_index))

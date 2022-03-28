@@ -1,7 +1,7 @@
 from Game import Game
 from consts import CARDS, STACKS
 
-GAMES = 100
+GAMES = 1000
 
 
 def main():
