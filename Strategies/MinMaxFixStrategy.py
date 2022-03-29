@@ -20,7 +20,7 @@ class MinMaxFixStrategy(MinMaxStrategy):
 
             card_index, stack_index = None, None
 
-            best_move = self.find_fix_move()
+            best_move = self.find_fix_move(self.player)
             if best_move:
                 card_index, stack_index = best_move
             else:
@@ -80,7 +80,7 @@ class MinMaxFixStrategy(MinMaxStrategy):
             else:
                 raise RuntimeError("Cant do a move")
 
-        best_move = self.find_fix_move()
+        best_move = self.find_fix_move(self.player)
         minimal_move = self.find_minimal_move(self.MINIMAL_WINDOW_MOVE)
         while best_move is not None or best_move is not None:
             if best_move is not None:
@@ -88,8 +88,8 @@ class MinMaxFixStrategy(MinMaxStrategy):
             else:
                 card_index, stack_index = minimal_move
             self.play_card(card_index, stack_index)
-            best_move = self.find_fix_move()
-            minimal_move = self.find_fix_move()
+            best_move = self.find_fix_move(self.player)
+            minimal_move = self.find_fix_move(self.player)
         return self.played_cards
 
     def find_minimal_move(self, minimal_delta=CARDS) -> (Card, Stack):

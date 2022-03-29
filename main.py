@@ -9,7 +9,9 @@ def main():
     game_stats = []
     max_played_cards = CARDS - 2
 
-    for _ in range(GAMES):
+    for i in range(GAMES):
+        if i % 100 == 0:
+            print(i)
         game = Game()
         game.play()
 

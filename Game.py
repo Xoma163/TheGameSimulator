@@ -8,7 +8,7 @@ from consts import PLAYERS, STACKS, MIN_PLAY_CARDS, MIN_PLAY_CARDS_EMPTY_DECK, M
 
 class Game:
     def __init__(self):
-        from Strategies.MinMaxFixStrategy import MinMaxFixStrategy
+        from Strategies.MinMaxFixFlagStrategy import MinMaxFixFlagStrategy
 
         self.deck = Deck()
 
@@ -18,7 +18,7 @@ class Game:
 
         self.players: List[Player] = [Player() for _ in range(PLAYERS)]
         self.active_player_index = 0
-        self.strategy = MinMaxFixStrategy()
+        self.strategy = MinMaxFixFlagStrategy(self)
 
         # Так надо для условий, когда например по ошибке раздаётся карт больше, чем есть в колоде
         for _ in range(MAX_CARDS * len(self.players)):
@@ -35,7 +35,7 @@ class Game:
             else:
                 cards_to_play = MIN_PLAY_CARDS_EMPTY_DECK
 
-            self.strategy.refresh_data(self)
+            self.strategy.refresh_data()
             try:
                 played_cards = self.strategy.get_played_cards(cards_to_play)
             except RuntimeError:
@@ -65,6 +65,8 @@ class Game:
         self.active_player_index += 1
         if self.active_player_index >= len(self.players):
             self.active_player_index = 0
+        for stack in self.stacks:
+            stack.remove_flags(self.active_player)
 
     @staticmethod
     def play_card(player, card, stack):

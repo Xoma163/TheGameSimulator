@@ -1,6 +1,8 @@
 from typing import List
 
 from Card import Card
+from Flag import Flag
+from Player import Player
 from consts import CARDS
 
 
@@ -18,6 +20,8 @@ class Stack:
 
         self.cards: List[Card] = [start_card]
         self.direction = direction
+
+        self.flags: List[(Flag, Player)] = []
 
     def __str__(self):
         return str(self.last_card)
@@ -54,3 +58,13 @@ class Stack:
     @property
     def last_card(self):
         return self.cards[-1]
+
+    def add_flag(self, flag: Flag, player: Player):
+        self.flags.append((flag, player))
+
+    def remove_flags(self, player):
+        new_flags = []
+        for i, (flag, _player) in enumerate(self.flags):
+            if player != _player:
+                new_flags.append((flag, _player))
+        self.flags = new_flags
