@@ -19,9 +19,14 @@ MIN_STEPS_ON_EMPTY_DECK = 1
 CARDS_LEFT_COUNT_TO_WIN = 10
 
 # Сколько игр проводить
-GAMES_COUNT = 1000
+GAMES_COUNT = 1000000
 
 ## Служебное
 
 # SEED
 RANDOM_SEED = 1
+
+TOTAL_CARDS_COUNT = MAX_CARD_VALUE - MIN_CARD_VALUE + 1
+
+# Количество воркеров процессора
+PROCESS_WORKERS = 16

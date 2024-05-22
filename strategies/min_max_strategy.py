@@ -6,7 +6,7 @@ from stack import Stacks
 from strategies.strategy import Strategy, StrategyStep
 
 
-# 27.34% winrate
+# 31.47% winrate
 class MinMaxStrategy(Strategy):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -75,7 +75,7 @@ class TheGame:
 
         stacks = " ".join([str(x.last_card) for x in self.stacks])
         win_or_lose = "выиграна" if self.is_win else "проиграна"
-        logger.info(
+        logger.debug(
             f"Игра закончена. Значения стопок - \"{stacks}\". Игра {win_or_lose}. Всего осталось карт на руках - \"{self.total_cards_count}\"")
 
     def _play(self):
