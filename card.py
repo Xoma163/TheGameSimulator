@@ -9,34 +9,34 @@ class Card:
 
         :param number: номер карты
         """
-        self.number = number
+        self.number: int = number
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self.number)
 
     def __repr__(self):
         return self.__str__()
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         return self.number == other.number
 
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool:
         return self.number != other.number
 
-    def __lt__(self, other):
+    def __lt__(self, other) -> bool:
         return self.number < other.number
 
-    def __le__(self, other):
+    def __le__(self, other) -> bool:
         return self.number <= other.number
 
-    def __gt__(self, other):
+    def __gt__(self, other) -> bool:
         return self.number > other.number
 
-    def __ge__(self, other):
+    def __ge__(self, other) -> bool:
         return self.number >= other.number
 
-    def __sub__(self, other):
+    def __sub__(self, other) -> bool:
         return self.number - other.number
 
-    def __add__(self, other):
+    def __add__(self, other) -> bool:
         return self.number + other.number

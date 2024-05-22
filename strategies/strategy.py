@@ -1,4 +1,5 @@
 import dataclasses
+from abc import ABC
 
 from card import Card
 from player import Players
@@ -12,7 +13,7 @@ class StrategyStep:
     wanna_more_steps: bool = False
 
 
-class Strategy:
+class Strategy(ABC):
     """
     Базовый класс стратегии
     """

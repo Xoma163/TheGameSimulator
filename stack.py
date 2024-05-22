@@ -1,11 +1,14 @@
+from abc import ABC
+
 from card import Card
 from settings import MIN_CARD_VALUE, MAX_CARD_VALUE
 
 
-class Stack:
+class Stack(ABC):
     """
     Стопка
     """
+
     START_VALUE = None
 
     def __init__(self, name: str):

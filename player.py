@@ -31,7 +31,7 @@ class Player:
                 return True
         return False
 
-    def has_fix_for_card_abs(self, card: Card):
+    def has_fix_for_card_abs(self, card: Card) -> bool:
         for j, card_1 in enumerate(self.cards):
             if card_1 == card:
                 continue
@@ -53,11 +53,10 @@ class Players:
 
     def __init__(
             self,
-            players: list[Player]
+            *players: Player
     ):
-        self._players: list[Player] = players
+        self._players: list[Player] = list(players)
         self._current_player_index: int = 0
-
         self.__iter_index: int = 0
 
     def __iter__(self):
@@ -72,7 +71,7 @@ class Players:
         else:
             raise StopIteration
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> Player:
         return self._players[item]
 
     @property

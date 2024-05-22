@@ -2,18 +2,13 @@ import random
 from collections import deque
 
 from card import Card
+from settings import MAX_CARD_VALUE, MIN_CARD_VALUE
 
 
-# from settings import RANDOM_SEED
-
-# random.Random(RANDOM_SEED)
 class Deck:
     """
     Колода
     """
-
-    MIN_CARD_VALUE = 2
-    MAX_CARD_VALUE = 99
 
     def __init__(
             self,
@@ -27,9 +22,9 @@ class Deck:
         :param max_val: максимальная карта в колоде
         """
         if not min_val:
-            min_val = self.MIN_CARD_VALUE
+            min_val = MIN_CARD_VALUE
         if not max_val:
-            max_val = self.MAX_CARD_VALUE
+            max_val = MAX_CARD_VALUE
 
         if min_val > max_val:
             raise ValueError("Минимальная карта в колоде больше максимальной карты")
@@ -51,11 +46,11 @@ class Deck:
     def can_get_card(self) -> bool:
         return len(self._cards) > 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self._cards)
 
     def __repr__(self):
         return self.__str__()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._cards)

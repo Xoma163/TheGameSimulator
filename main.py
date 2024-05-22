@@ -24,13 +24,13 @@ def main():
     cards_count = []
 
     for _ in range(GAMES_COUNT):
-        players = Players([Player(f"Игрок #{x}") for x in range(1, PLAYERS_COUNT + 1)])
+        players = Players(*[Player(f"Игрок #{x}") for x in range(1, PLAYERS_COUNT + 1)])
 
         stacks = Stacks(
             IncreaseStack("Стопка #1"),
             IncreaseStack("Стопка #2"),
             DecreaseStack("Стопка #3"),
-            DecreaseStack("Стопка #4"),
+            DecreaseStack("Стопка #4")
         )
         strategy = MinMaxStrategy(players, stacks)
 
@@ -39,7 +39,7 @@ def main():
 
         if the_game.is_win:
             win_games_count += 1
-            cards_count.append(the_game.total_cards_count)
+        cards_count.append(the_game.total_cards_count)
 
     logger.info(f"Выиграно игр - {win_games_count}/{GAMES_COUNT}")
     winrate = round(win_games_count / GAMES_COUNT * 100, 2)
