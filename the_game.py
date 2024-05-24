@@ -50,6 +50,7 @@ class TheGame:
         player.play_card(card)
         stack.put(card)
         logger.debug(f"Игрок \"{player}\" разыграл карту \"{card}\" в стопку \"{stack.name}\"")
+
         stacks = " ".join([str(x.last_card) for x in self.stacks])
         logger.debug(f"Значения стопок - \"{stacks}\"")
 
@@ -83,6 +84,8 @@ class TheGame:
         return TheGameReport(self.is_win, self.total_cards_count)
 
     def play(self):
+        logger.debug("Начало новой игры")
+
         self._play()
 
         stacks = " ".join([str(x.last_card) for x in self.stacks])
@@ -110,14 +113,15 @@ class TheGame:
             wanna_more_steps = False
 
             while steps_count < min_steps_count or wanna_more_steps:
-                step = self.strategy.get_next_player_step()
+                is_extra_step = steps_count >= min_steps_count
+                step = self.strategy.get_next_player_step(is_extra_step=is_extra_step)
                 # Закончились ходы
                 if not step:
-                    # поражение, невозможно совершить ход
-                    if steps_count < min_steps_count:
-                        return
                     # если ход был необязательным
-                    break
+                    if is_extra_step:
+                        break
+                    # поражение, невозможно совершить ход
+                    return
 
                 self.play_card(self.players.current_player, step.card, step.stack)
                 steps_count += 1

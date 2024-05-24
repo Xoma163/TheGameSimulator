@@ -1,4 +1,5 @@
 import logging
+from copy import copy
 from enum import Enum
 
 from deck import Deck
@@ -12,7 +13,7 @@ logger = logging.getLogger()
 
 class FlagPriority(Enum):
     CRITICAL = 100
-    HIGH = 15
+    HIGH = 50
     MEDIUM = 10
     LOW = 5
 
@@ -63,15 +64,20 @@ class Flags:
     def remove_player_flags(self, player: Player):
         self._flags = [x for x in self._flags if x.player != player]
 
+    def remove_stack_flags(self, stack: Stack):
+        self._flags = [flag for flag in self._flags if flag.stack != stack]
+
     def add(self, flag: Flag):
         self._flags.append(flag)
 
-    def pop(self):
-        pass
 
-
-# 54.3% winrate
+# 70% winrate
 class FlagStrategy(Strategy):
+    FLAG_HIGH_DIFF = 5
+    FLAG_MEDIUM_DIFF = 10
+
+    IGNORE_FLAGS_DIFF = 31
+
     name = "Флаг стратегия"
 
     def __init__(self, *args, **kwargs):
@@ -80,10 +86,13 @@ class FlagStrategy(Strategy):
         super().__init__(*args, **kwargs)
 
     def set_deck(self, deck: Deck):
-        self.deck = deck
+        super().set_deck(deck)
         self.min_max_strategy.deck = deck
 
     def pre_player_step(self):
+        """
+        Действия стратегии перед ходом игрока
+        """
         # remove flags
         if not self.flags:
             return
@@ -91,50 +100,86 @@ class FlagStrategy(Strategy):
         self.flags.remove_player_flags(player)
         logger.debug(f"Удалил флаги игрока {player}, так как его ход")
 
-    def get_next_player_step(self) -> StrategyStep | None:
-        logger.debug(f"Текущие флаги: {self.flags}")
+    def get_next_player_step(self, is_extra_step=False) -> StrategyStep | None:
+        """
+        Определение шага стратегии
+        :return: StrategyStep
+        """
 
         strategy_step = self.get_next_step()
         if strategy_step:
             logger.debug(f"Произведён ход по FlagStrategy")
-            return strategy_step
-
-        strategy_step = self.get_default_step()
-        logger.debug(f"Произведён ход по MinMaxStrategy")
-        return strategy_step
-
-    def get_next_step(self) -> StrategyStep | None:
-        player = self.players.current_player
-
-        strategy_step = None
-        if len(self.flags):
-            blocked_stacks = [x.stack for x in self.flags]
-            new_stacks_list = [stack for stack in self.stacks if stack not in blocked_stacks]
-            new_stacks = Stacks(*new_stacks_list)
-            strategy_step = self.min_max_strategy.get_next_step(player.cards, new_stacks)
+        else:
+            strategy_step = self.get_default_step()
             if strategy_step:
-                wanna_more_steps = self.min_max_strategy.wanna_next_step(new_stacks, strategy_step)
-                strategy_step.wanna_more_steps = wanna_more_steps
+                self.flags.remove_stack_flags(strategy_step.stack)
+                logger.debug(f"Удалил флаги стопки {strategy_step.stack}, так как сюда сделали ход")
+
+            logger.debug(f"Произведён ход по MinMaxStrategy")
         return strategy_step
 
     def post_cards_draw(self):
-        # Установка флагов
+        """
+        Действия стратегии после добора карт игрока
+        """
         for player in self.players:
-            for stack in self.stacks:
-                for card in player.cards:
-                    if not stack.can_be_fixed(card):
+            strategy_steps = []
+            for i in range(2):
+                if strategy_steps:
+                    player_cards = copy(player.cards)
+                    for strategy_step in strategy_steps:
+                        player_cards.remove(strategy_step.card)
+                else:
+                    if i > 0:
                         continue
-                    flag = Flag(stack, player, FlagPriority.CRITICAL)
-                    if flag not in self.flags:
-                        self.flags.add(flag)
+                    player_cards = player.cards
+
+                if strategy_step := self.min_max_strategy.get_next_step(player_cards, self.stacks):
+                    strategy_steps.append(strategy_step)
+                    priority = None
+                    if strategy_step.is_fix:
+                        priority = FlagPriority.CRITICAL
+
+                    if priority:
+                        flag = Flag(strategy_step.stack, player, priority)
+                        if flag not in self.flags:
+                            self.flags.add(flag)
                         logger.debug(
-                            f"Установлен флаг игроком {player}. Карта {card} в стопку {stack.name} ({stack.last_card})")
+                            f"Установлен флаг игроком {player}. "
+                            f"Карта {strategy_step.card} в стопку {strategy_step.stack.name} "
+                            f"({strategy_step.stack.last_card}). уровень {flag.priority}"
+                        )
+
+    def get_next_step(self) -> StrategyStep | None:
+        if not self.flags:
+            return None
+
+        blocked_stacks_set = [x.stack for x in self.flags if x.priority == FlagPriority.CRITICAL]
+        new_stacks_list = [stack for stack in self.stacks if stack not in blocked_stacks_set]
+        new_stacks = Stacks(*new_stacks_list)
+        cards = self.players.current_player.cards
+        strategy_step = self.min_max_strategy.get_next_step(cards, new_stacks)
+
+        if not strategy_step:
+            return None
+
+        if strategy_step.diff > self.IGNORE_FLAGS_DIFF:
+            return None
+
+        wanna_more_steps = self.min_max_strategy.wanna_next_step(
+            self.players.current_player.cards,
+            new_stacks,
+            strategy_step
+        )
+        strategy_step.wanna_more_steps = wanna_more_steps
+        return strategy_step
 
     def get_default_step(self) -> StrategyStep | None:
-        cards = self.players.current_player.cards
-        stacks = self.stacks
-        strategy_step = self.min_max_strategy.get_next_step(cards, stacks)
+        strategy_step = self.min_max_strategy.get_next_step(self.players.current_player.cards, self.stacks)
         if strategy_step:
-            wanna_more_steps = self.min_max_strategy.wanna_next_step(stacks, strategy_step)
-            strategy_step.wanna_more_steps = wanna_more_steps
+            strategy_step.wanna_more_steps = self.min_max_strategy.wanna_next_step(
+                self.players.current_player.cards,
+                self.stacks,
+                strategy_step
+            )
         return strategy_step

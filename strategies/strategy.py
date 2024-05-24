@@ -13,6 +13,14 @@ class StrategyStep:
     stack: Stack
     wanna_more_steps: bool = False
 
+    @property
+    def diff(self) -> int:
+        return abs(self.stack.last_card_value - self.card.number)
+
+    @property
+    def is_fix(self) -> bool:
+        return self.stack.can_be_fixed(self.card)
+
 
 class Strategy(ABC):
     name = ""
@@ -35,12 +43,10 @@ class Strategy(ABC):
         """
         pass
 
-    def get_next_player_step(self) -> StrategyStep | None:
+    def get_next_player_step(self, is_extra_step=False) -> StrategyStep | None:
         """
-        :return: tuple
-        :return Card - карта, которая будет разыграна.
-        :return Stack - колода, в которую будет разыграна карта.
-        :return bool - есть ли желание сходить повторно даже без необходимости.
+        Определение шага стратегии
+        :return: StrategyStep
         """
 
         raise NotImplementedError

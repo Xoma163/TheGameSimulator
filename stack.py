@@ -48,9 +48,11 @@ class Stack(ABC):
         return self.__str__()
 
     def __eq__(self, other):
-        if not self._last_card or not other._last_card:
-            return None
-        return self._last_card == other._last_card
+        if isinstance(other, Stack):
+            if not self._last_card or not other._last_card:
+                return None
+            return self._last_card == other._last_card
+        return False
 
 
 class IncreaseStack(Stack):

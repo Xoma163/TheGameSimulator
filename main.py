@@ -2,13 +2,16 @@ import logging
 import multiprocessing
 import random
 import time
+from statistics import median
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
+from numpy import average
 from tqdm import tqdm
 
 from player import Players, Player
-from settings import PLAYERS_COUNT, GAMES_COUNT, RANDOM_SEED, TOTAL_CARDS_COUNT, PROCESS_WORKERS, USE_TQDM, STACKS_COUNT
+from settings import PLAYERS_COUNT, GAMES_COUNT, RANDOM_SEED, TOTAL_CARDS_COUNT, PROCESS_WORKERS, USE_TQDM, \
+    STACKS_COUNT, LOGGING_LEVEL
 from stack import Stacks, DecreaseStack, IncreaseStack
 from strategies.flag_strategy import FlagStrategy
 from strategies.min_max_strategy import MinMaxStrategy
@@ -16,7 +19,7 @@ from strategies.strategy import Strategy
 from the_game import TheGame, TheGameReport
 
 logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger.setLevel(LOGGING_LEVEL)
 
 stream_handler = logging.StreamHandler()
 logger.addHandler(stream_handler)
@@ -24,6 +27,7 @@ logger.addHandler(stream_handler)
 random.seed(RANDOM_SEED)
 
 strategy_class = FlagStrategy
+
 
 def play_games() -> list[TheGameReport]:
     start_time = time.time()
@@ -78,8 +82,8 @@ def log_statistics(played_games_reports: list[TheGameReport]):
     logger.info(f"Выиграно игр - {win_games_count}/{GAMES_COUNT}")
     winrate = round(win_games_count / GAMES_COUNT * 100, 2)
     logger.info(f"Винрейт - {winrate}%")
-    avg_cards_count = round(sum(cards_count) / len(cards_count), 2)
-    logger.info(f"В среднем остаётся карт на руках и в колоде - {avg_cards_count}")
+    logger.info(f"Среднее оставшихся карт - {round(average(cards_count), 2)}")
+    logger.info(f"Медиана оставшихся карт - {round(median(cards_count), 2)}")
 
 
 def draw_cards_count(played_games_reports: list[TheGameReport], strategy: type[Strategy]):
@@ -97,7 +101,7 @@ def draw_cards_count(played_games_reports: list[TheGameReport], strategy: type[S
     ax.set_ylabel('Процент игр', size=15)
 
     ax.set_xlim([0, TOTAL_CARDS_COUNT])
-    ax.set_ylim([0, 0.1])
+    ax.set_ylim([0, 0.12])
 
     plt.tight_layout()
     plt.show()

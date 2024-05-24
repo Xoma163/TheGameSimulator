@@ -1,4 +1,5 @@
 ## Настройки игры
+import logging
 
 # Количество игроков
 PLAYERS_COUNT = 4
@@ -34,4 +35,9 @@ TOTAL_CARDS_COUNT = MAX_CARD_VALUE - MIN_CARD_VALUE + 1
 # Количество воркеров процессора
 PROCESS_WORKERS = 16
 # PROCESS_WORKERS = 1
+
+# Использовать TQDM
 USE_TQDM = False
+
+# Уровень логирования
+LOGGING_LEVEL = logging.INFO
