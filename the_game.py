@@ -1,3 +1,4 @@
+import dataclasses
 import logging
 
 from card import Card
@@ -8,6 +9,12 @@ from stack import Stacks, Stack
 from strategies.strategy import Strategy
 
 logger = logging.getLogger()
+
+
+@dataclasses.dataclass
+class TheGameReport:
+    is_win: bool
+    total_cards_count: int
 
 
 class TheGame:
@@ -28,13 +35,13 @@ class TheGame:
 
         # Колода
         self.deck = Deck()
+        self.strategy.set_deck(self.deck)
 
         for player in self.players:
             cards = self.deck.pop(PLAYER_CARDS_COUNT)
             player.set_cards(cards)
 
-    @staticmethod
-    def play_card(player: Player, card: Card, stack: Stack):
+    def play_card(self, player: Player, card: Card, stack: Stack):
         """
         Розыгрыш карты.
         Положить карту в колоду
@@ -43,6 +50,8 @@ class TheGame:
         player.play_card(card)
         stack.put(card)
         logger.debug(f"Игрок \"{player}\" разыграл карту \"{card}\" в стопку \"{stack.name}\"")
+        stacks = " ".join([str(x.last_card) for x in self.stacks])
+        logger.debug(f"Значения стопок - \"{stacks}\"")
 
     def draw_cards(self, player: Player, count: int):
         """
@@ -70,6 +79,9 @@ class TheGame:
     def is_lose(self) -> bool:
         return not self.is_win
 
+    def get_report(self) -> TheGameReport:
+        return TheGameReport(self.is_win, self.total_cards_count)
+
     def play(self):
         self._play()
 
@@ -82,24 +94,45 @@ class TheGame:
         while True:
             # Определение количества шагов
             min_steps_count = MIN_STEPS if self.deck.can_get_card else MIN_STEPS_ON_EMPTY_DECK
+            logger.debug(f"Минимальное количество шагов - {min_steps_count}")
+
+            cards_str = " ".join([str(x) for x in sorted(self.players.current_player.cards)])
+            logger.debug(f"Карты игрока \"{self.players.current_player}\" - \"{cards_str}\"")
+
+            stacks = " ".join([str(x.last_card) for x in self.stacks])
+            logger.debug(f"Значения стопок - \"{stacks}\"")
+
+            # Действия перед ходом
+            self.strategy.pre_player_step()
 
             # Ходы
             steps_count = 0
             wanna_more_steps = False
 
             while steps_count < min_steps_count or wanna_more_steps:
-                step = self.strategy.get_next_player_steps()
-                # Закончились ходы (поражение)
+                step = self.strategy.get_next_player_step()
+                # Закончились ходы
                 if not step:
-                    return
+                    # поражение, невозможно совершить ход
+                    if steps_count < min_steps_count:
+                        return
+                    # если ход был необязательным
+                    break
 
                 self.play_card(self.players.current_player, step.card, step.stack)
                 steps_count += 1
                 wanna_more_steps = step.wanna_more_steps
 
+            # Действия после хода
+            self.strategy.post_player_step()
+
             # Добор карт
             self.draw_cards(self.players.current_player, steps_count)
+
+            # Действия после хода
+            self.strategy.post_cards_draw()
 
             # Передача хода следующему игроку
             next_player = self.players.next_player()
             logger.debug(f"Передача хода игроку \"{next_player}\"")
+            logger.debug(f"-----")

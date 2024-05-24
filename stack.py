@@ -11,10 +11,10 @@ class Stack(ABC):
 
     START_VALUE = None
 
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, name: str | None = None):
+        self.name: str | None = name
         self._cards: list[Card] = []
-        self._last_card = None
+        self._last_card: Card | None = None
         self._len_cards: int = 0
 
     def put(self, card: Card):
@@ -35,7 +35,7 @@ class Stack(ABC):
     def can_put(self, card: Card) -> bool:
         raise NotImplementedError
 
-    def can_fix(self, card: Card) -> bool:
+    def can_be_fixed(self, card: Card) -> bool:
         raise NotImplementedError
 
     def _raise_error(self, card: Card):
@@ -47,6 +47,11 @@ class Stack(ABC):
     def __repr__(self):
         return self.__str__()
 
+    def __eq__(self, other):
+        if not self._last_card or not other._last_card:
+            return None
+        return self._last_card == other._last_card
+
 
 class IncreaseStack(Stack):
     START_VALUE = MIN_CARD_VALUE - 1
@@ -54,9 +59,9 @@ class IncreaseStack(Stack):
     def can_put(self, card: Card) -> bool:
         if not self._last_card:
             return True
-        return card > self._last_card or self.can_fix(card)
+        return card > self._last_card or self.can_be_fixed(card)
 
-    def can_fix(self, card: Card) -> bool:
+    def can_be_fixed(self, card: Card) -> bool:
         if not self._last_card:
             return False
         return self._last_card - card == 10
@@ -73,9 +78,9 @@ class DecreaseStack(Stack):
     def can_put(self, card: Card) -> bool:
         if not self._last_card:
             return True
-        return card < self._last_card or self.can_fix(card)
+        return card < self._last_card or self.can_be_fixed(card)
 
-    def can_fix(self, card: Card) -> bool:
+    def can_be_fixed(self, card: Card) -> bool:
         if not self._last_card:
             return False
         return card - self._last_card == 10
@@ -89,6 +94,8 @@ class DecreaseStack(Stack):
 class Stacks:
     def __init__(self, *stacks: Stack):
         self._stacks: list[Stack] = list(stacks)
+        for i, stack in enumerate(self._stacks):
+            stack.name = f"#{i + 1}"
         self.__iter_index: int = 0
 
     def __iter__(self):

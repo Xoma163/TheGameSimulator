@@ -6,9 +6,9 @@ class Player:
     Игрок
     """
 
-    def __init__(self, name: str):
-        self.name = name
-        self.cards = []
+    def __init__(self, name: str | None = None):
+        self.name: str | None = name
+        self.cards: list[Card] = []
 
     def set_cards(self, cards: list[Card]):
         self.cards = cards
@@ -56,6 +56,8 @@ class Players:
             *players: Player
     ):
         self._players: list[Player] = list(players)
+        for i, player in enumerate(self._players):
+            player.name = f"#{i + 1}"
         self._current_player_index: int = 0
         self.__iter_index: int = 0
 

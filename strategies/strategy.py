@@ -2,6 +2,7 @@ import dataclasses
 from abc import ABC
 
 from card import Card
+from deck import Deck
 from player import Players
 from stack import Stacks, Stack
 
@@ -14,6 +15,8 @@ class StrategyStep:
 
 
 class Strategy(ABC):
+    name = ""
+
     """
     Базовый класс стратегии
     """
@@ -21,8 +24,18 @@ class Strategy(ABC):
     def __init__(self, players: Players, stacks: Stacks):
         self.players: Players = players
         self.stacks: Stacks = stacks
+        self.deck: Deck | None = None
 
-    def get_next_player_steps(self) -> StrategyStep | None:
+    def set_deck(self, deck: Deck):
+        self.deck = deck
+
+    def pre_player_step(self):
+        """
+        Действия стратегии перед ходом игрока
+        """
+        pass
+
+    def get_next_player_step(self) -> StrategyStep | None:
         """
         :return: tuple
         :return Card - карта, которая будет разыграна.
@@ -31,3 +44,15 @@ class Strategy(ABC):
         """
 
         raise NotImplementedError
+
+    def post_player_step(self):
+        """
+        Действия стратегии после хода игрока, но до добора карт
+        """
+        pass
+
+    def post_cards_draw(self):
+        """
+        Действия стратегии после добора карт игрока
+        """
+        pass

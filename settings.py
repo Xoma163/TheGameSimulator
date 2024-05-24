@@ -13,13 +13,16 @@ MIN_STEPS = 2
 # Минимум выложенных карт в ход, когда в колоде не осталось карт
 MIN_STEPS_ON_EMPTY_DECK = 1
 
+# Количество стопок на повышение и на понижение. Всего их будет в два раза больше
+STACKS_COUNT = 2
+
 ## Условия
 
 # Сколько должно остаться карт чтобы была зачтена победа
 CARDS_LEFT_COUNT_TO_WIN = 10
 
 # Сколько игр проводить
-GAMES_COUNT = 1000000
+GAMES_COUNT = 100_000
 
 ## Служебное
 
@@ -30,3 +33,5 @@ TOTAL_CARDS_COUNT = MAX_CARD_VALUE - MIN_CARD_VALUE + 1
 
 # Количество воркеров процессора
 PROCESS_WORKERS = 16
+# PROCESS_WORKERS = 1
+USE_TQDM = False
